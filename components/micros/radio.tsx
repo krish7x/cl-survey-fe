@@ -40,7 +40,7 @@ export default function Radio({
           />
           <label
             htmlFor={`radio-button-option-${inx}-${id}`}
-            className="ms-2 select-none text-sm font-normal text-custom-17"
+            className="ms-2 select-none text-sm font-normal text-custom-6"
           >
             {name}
           </label>

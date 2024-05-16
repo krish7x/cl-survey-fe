@@ -54,7 +54,7 @@ export interface ITemplateQuestion {
   optionsJson?: IOptionJson;
   isAdded?: boolean;
   rating?: number;
-  answer?: number[];
+  answer: Array<number | string>;
 }
 
 export interface IOptions {

@@ -88,7 +88,7 @@ export default function Components() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-10 py-8">
+    <div className="flex flex-col  items-center justify-center gap-10 py-8">
       <div className="flex flex-col gap-4">
         <h1>Star Rating component</h1>
         <StarRating
@@ -96,6 +96,13 @@ export default function Components() {
           rating={rating}
           onChange={onStarRatingChange}
         />
+      </div>
+
+      <div className="flex w-96 flex-col gap-2">
+        <h1>Heading</h1>
+        <h2 className="text-xl font-semibold text-custom-8">
+          Have you visited our store recently ?
+        </h2>
       </div>
 
       <div className="flex w-96 flex-col gap-2">

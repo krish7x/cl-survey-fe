@@ -1,0 +1,19 @@
+
+> fe-core@0.0.1 format
+> prettier --write "**/*.{ts,tsx,md}"
+
+[[33mwarn[39m] [33mjsxBracketSameLine[39m is deprecated.
+app/components/page.tsx[2K[1G[90mapp/components/page.tsx[39m 297ms (unchanged)
+app/layout.tsx[2K[1G[90mapp/layout.tsx[39m 18ms (unchanged)
+app/page.tsx[2K[1G[90mapp/page.tsx[39m 3ms (unchanged)
+app/survey/[slug]/page.tsx[2K[1G[90mapp/survey/[slug]/page.tsx[39m 36ms (unchanged)
+components/micros/radio.tsx[2K[1G[90mcomponents/micros/radio.tsx[39m 19ms (unchanged)
+components/micros/select.tsx[2K[1G[90mcomponents/micros/select.tsx[39m 16ms (unchanged)
+components/micros/star-rating.tsx[2K[1G[90mcomponents/micros/star-rating.tsx[39m 9ms (unchanged)
+components/survey/nps-question-screen.tsx[2K[1G[90mcomponents/survey/nps-question-screen.tsx[39m 23ms (unchanged)
+components/survey/other-question-screen.tsx[2K[1G[90mcomponents/survey/other-question-screen.tsx[39m 28ms (unchanged)
+components/survey/thanks-screen.tsx[2K[1G[90mcomponents/survey/thanks-screen.tsx[39m 6ms (unchanged)
+README.md[2K[1G[90mREADME.md[39m 19ms (unchanged)
+tailwind.config.ts[2K[1G[90mtailwind.config.ts[39m 6ms (unchanged)
+types/index.d.ts[2K[1G[90mtypes/index.d.ts[39m 6ms (unchanged)
+utils/axios.ts[2K[1G[90mutils/axios.ts[39m 3ms (unchanged)

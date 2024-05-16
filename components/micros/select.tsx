@@ -15,19 +15,18 @@ export default function Select({
   onChange: (id: string | number, maxSelect: number) => void;
 }) {
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className="flex w-full flex-col gap-4">
       {options.map(({ id, name }, inx) => (
         <Button
           key={'button-' + inx}
-          outline={!selectedOptions?.includes(id)}
           size={'lg'}
-          className={`items-start hover:opacity-70 ${
-            selectedOptions?.includes(inx) ? 'bg-custom-12' : ''
+          className={`cursor-pointer !justify-start border-custom-7 bg-inherit !p-0 !transition-none hover:!bg-inherit focus:ring-0 ${
+            selectedOptions?.includes(id) &&
+            'border-custom-10 bg-custom-9 hover:!bg-custom-9'
           }`}
-          gradientDuoTone="purpleToBlue"
           onClick={() => onChange(id, maxSelect)}
         >
-          {name}
+          <p className="py-[calc(6px)] text-lg text-custom-8">{name}</p>
         </Button>
       ))}
     </div>

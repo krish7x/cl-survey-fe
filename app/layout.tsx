@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { Source_Sans_3 } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import './globals.css';
 
-const sourceSans = Source_Sans_3({ subsets: ['cyrillic'] });
+const sourceSans = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'CL Survey Application',

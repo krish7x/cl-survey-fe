@@ -1,0 +1,5 @@
+
+> fe-dashboard@0.0.1 pre-commit
+> npx lint-staged
+
+[34m→[39m No staged files match any configured task.
