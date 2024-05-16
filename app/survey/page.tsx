@@ -205,7 +205,7 @@ export default function Survey() {
   return (
     <div className="min-h-screen w-full bg-[radial-gradient(117.39%_169.54%_at_-3.2%_-1.87%,_rgba(255,_246,_200,_0.70)_0%,_rgba(255,_215,_245,_0.70)_21.81%,_rgba(243,_241,_255,_0.80)_50%,_#F8EBFB_100%)]">
       <div
-        className={`flex size-full flex-col items-center gap-[calc(80px)] p-8`}
+        className={`flex size-full flex-col items-center ${!showThanksScreen && 'gap-[calc(80px)]'} p-8`}
       >
         <Image
           src={caratlanelogo}
