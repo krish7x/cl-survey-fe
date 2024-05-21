@@ -57,6 +57,10 @@ export interface ITemplateQuestion {
   answer: Array<number | string>;
 }
 
+export interface ILinkedHash {
+  [key: string | number]: string | number | undefined;
+}
+
 export interface IOptions {
   id: number | string;
   name: string;

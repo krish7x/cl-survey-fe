@@ -2,7 +2,7 @@
 
 import Select from '@/components/micros/select';
 import { templateJSONData } from '@/constants/survey';
-import { IOptions, ITemplateQuestion } from '@/types';
+import { ILinkedHash, IOptions, ITemplateQuestion } from '@/types';
 import { Button, Textarea } from 'flowbite-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
@@ -11,97 +11,172 @@ import { useCallback, useMemo, useState } from 'react';
 import caratlanelogo from '../../public/caratlane.svg';
 
 export default function Survey() {
+  //states
   const [questions, setQuestions] =
     useState<ITemplateQuestion[]>(templateJSONData);
-  const [currentQuestion, setCurrentQuestion] = useState<ITemplateQuestion>(
-    templateJSONData[0],
+  const [currentQuestions, setCurrentQuestions] = useState<ITemplateQuestion[]>(
+    [templateJSONData[0]],
   );
   const [showThanksScreen, setShowThanksScreen] = useState(false);
+  const [linkedHash, setLinkedHash] = useState<ILinkedHash>();
 
+  //memos
   const showFooter = useMemo(() => {
-    const optionTypeId = currentQuestion.optionTypeId;
-    return optionTypeId === 4 || optionTypeId === 6;
-  }, [currentQuestion]);
+    return (
+      currentQuestions.some(
+        q => q.optionTypeId === 4 || q.optionTypeId === 6,
+      ) || currentQuestions.length > 1
+    );
+  }, [currentQuestions]);
 
   const disabled = useMemo(() => {
-    const optionTypeId = currentQuestion.optionTypeId;
-    if (optionTypeId === 4) return !currentQuestion.answer.length;
-    if (optionTypeId === 6)
-      return !(currentQuestion.answer[0] as string)?.length;
-  }, [currentQuestion]);
+    return currentQuestions.some(q => {
+      if (q.optionTypeId === 4) return !q.answer.length;
+      if (q.optionTypeId === 6) return !(q.answer[0] as string)?.length;
+      return false;
+    });
+  }, [currentQuestions]);
 
+  //callbacks
   const setStateValue = useCallback(
-    (value: Array<string | number>) => {
-      const clone = [...questions];
-      const curIndex = questions.findIndex(
-        val => val.questionId === currentQuestion.questionId,
-      );
-      clone[curIndex] = {
-        ...currentQuestion,
-        answer: value,
-      };
-      setQuestions(clone);
-      setCurrentQuestion({
-        ...currentQuestion,
-        answer: value,
-      });
+    (answer: Array<string | number>, questionIndex?: number) => {
+      if (questionIndex !== undefined) {
+        const curQuestion = currentQuestions[questionIndex];
+        const clone = [...questions];
+        const curIndex = questions.findIndex(
+          val => val.questionId === curQuestion.questionId,
+        );
+        clone[curIndex] = {
+          ...curQuestion,
+          answer,
+        };
+        setQuestions(clone);
+        const currentQuestionsClone = [...currentQuestions];
+        currentQuestionsClone[questionIndex] = {
+          ...curQuestion,
+          answer,
+        };
+        setCurrentQuestions(currentQuestionsClone);
+      }
     },
-    [currentQuestion, questions],
+    [currentQuestions, questions],
   );
 
   const onSelectOption = useCallback(
-    (inx: number | string, maxSelect: number) => {
-      if ((currentQuestion.answer || [])?.length < maxSelect) {
-        //select
+    (
+      inx: number | string,
+      maxSelect: number,
+      linkedTo?: number | string,
+      questionIndex?: number,
+    ) => {
+      if (questionIndex !== undefined && currentQuestions?.length) {
+        const currentQuestion = currentQuestions[questionIndex];
         if (!currentQuestion.answer.includes(inx)) {
-          //add
-          const value = [...currentQuestion.answer, inx];
-          setStateValue(value);
+          if (currentQuestion.optionTypeId === 3) {
+            if (!currentQuestion.answer.length) {
+              //add
+              const value = [...currentQuestion.answer, inx];
+              const hash = {
+                ...linkedHash,
+                [`${questionIndex}_${inx}`]: linkedTo,
+              };
+              setStateValue(value, questionIndex);
+              setLinkedHash(hash);
+            } else {
+              //remove
+              if (currentQuestion.answer.includes(inx)) {
+                const value = currentQuestion.answer.filter(val => val !== inx);
+                const hash = { ...linkedHash };
+                delete hash[inx];
+                setStateValue(value, questionIndex);
+                setLinkedHash(hash);
+              } else {
+                //replace
+                const value = [...currentQuestion.answer.slice(+inx, 1), inx];
+                const hash = { ...linkedHash };
+                delete hash[inx];
+                setStateValue(value, questionIndex);
+                setLinkedHash(hash);
+              }
+            }
+          } else {
+            //add
+            const value = [...currentQuestion.answer, inx];
+            const hash = {
+              ...linkedHash,
+              [`${questionIndex}_${inx}`]: linkedTo,
+            };
+            setStateValue(value, questionIndex);
+            setLinkedHash(hash);
+          }
         } else {
           //remove
           const value = currentQuestion.answer.filter(val => val !== inx);
-          setStateValue(value);
+          const hash = { ...linkedHash };
+          delete hash[inx];
+          setStateValue(value, questionIndex);
+          setLinkedHash(hash);
         }
-        //de-select
-      } else {
-        const value = [...(currentQuestion?.answer?.slice(1) || []), inx];
-        setStateValue(value);
-      }
 
-      //single select
-      if (maxSelect === 1) {
-        const curIndex = questions.findIndex(
-          val => val.questionId === currentQuestion.questionId,
-        );
-        if (curIndex !== questions.length - 1) {
-          setTimeout(() => {
-            setCurrentQuestion(questions[curIndex + 1]);
-          }, 300);
-        } else {
-          setShowThanksScreen(true);
+        //single select
+        if (maxSelect === 1 && currentQuestions?.length === 1) {
+          const curIndex = questions.findIndex(
+            val => val.questionId === currentQuestion.questionId,
+          );
+          if (curIndex !== questions.length - 1) {
+            setTimeout(() => {
+              if (linkedTo) {
+                const curQuestion = questions.find(
+                  val => val.questionId === linkedTo,
+                );
+                if (curQuestion) {
+                  setCurrentQuestions([curQuestion]);
+                } else {
+                  setCurrentQuestions([questions[questions.length - 1]]);
+                }
+              } else {
+                setCurrentQuestions([questions[questions.length - 1]]);
+              }
+            }, 300);
+          } else {
+            setShowThanksScreen(true);
+          }
         }
       }
     },
-    [
-      currentQuestion.answer,
-      currentQuestion.questionId,
-      questions,
-      setStateValue,
-    ],
+    [currentQuestions, linkedHash, questions, setStateValue],
   );
 
   const onContinue = useCallback(() => {
-    const curIndex = questions.findIndex(
-      val => val.questionId === currentQuestion.questionId,
-    );
-    if (curIndex !== questions.length - 1) {
+    const tempQuestion: ITemplateQuestion[] = [];
+    currentQuestions.forEach((question, index) => {
+      const curIndex = questions.findIndex(
+        val => val.questionId === question.questionId,
+      );
+      if (curIndex !== questions.length - 1) {
+        const curQuestion: ITemplateQuestion = questions[curIndex];
+        curQuestion.answer.forEach((val: string | number) => {
+          const linkedTo = linkedHash ? linkedHash[`${index}_${val}`] : false;
+          const nextQuestion = questions.find(
+            val => val.questionId === linkedTo,
+          );
+          if (nextQuestion) {
+            tempQuestion.push(nextQuestion);
+          }
+        });
+      } else {
+        setShowThanksScreen(true);
+      }
       setTimeout(() => {
-        setCurrentQuestion(questions[curIndex + 1]);
+        if (!tempQuestion.length) {
+          setCurrentQuestions([questions[questions.length - 1]]);
+        } else {
+          setCurrentQuestions(tempQuestion);
+        }
       }, 300);
-    } else {
-      setShowThanksScreen(true);
-    }
-  }, [currentQuestion.questionId, questions]);
+      setLinkedHash({});
+    });
+  }, [currentQuestions, linkedHash, questions]);
 
   return (
     <div className="min-h-screen w-full bg-[radial-gradient(117.39%_169.54%_at_-3.2%_-1.87%,_rgba(255,_246,_200,_0.70)_0%,_rgba(255,_215,_245,_0.70)_21.81%,_rgba(243,_241,_255,_0.80)_50%,_#F8EBFB_100%)]">
@@ -118,7 +193,7 @@ export default function Survey() {
         <AnimatePresence>
           <motion.div
             className={`${showFooter && 'pb-24'} md:mt-[calc(10%)] md:w-2/5 md:pl-24`}
-            key={currentQuestion.questionId}
+            key={currentQuestions[0].questionId}
             layout
             animate={{
               opacity: 1,
@@ -129,38 +204,44 @@ export default function Survey() {
               ease: 'linear',
             }}
           >
-            {!showThanksScreen && (
+            {!showThanksScreen ? (
               <div className="flex flex-col gap-10">
-                <h2 className="text-xl font-semibold text-custom-8">
-                  {currentQuestion.title}
-                </h2>
-                {(currentQuestion.optionTypeId === 3 ||
-                  currentQuestion.optionTypeId === 4) && (
-                  <Select
-                    options={currentQuestion.optionsJson?.options as IOptions[]}
-                    selectedOptions={currentQuestion?.answer || []}
-                    maxSelect={
-                      currentQuestion.optionTypeId === 3
-                        ? 1
-                        : currentQuestion.optionsJson?.options?.length || 1
-                    }
-                    onChange={(inx, maxSelect) =>
-                      onSelectOption(inx, maxSelect)
-                    }
-                  />
-                )}
-                {currentQuestion.optionTypeId === 6 && (
-                  <Textarea
-                    id="txt-template-description"
-                    placeholder="Write here..."
-                    value={currentQuestion.answer[0]}
-                    onChange={event => setStateValue([event.target.value])}
-                    className="h-[calc(200px)] border-custom-7 p-3 text-base"
-                    required
-                  />
-                )}
-
-                {showFooter && !showThanksScreen && (
+                {currentQuestions?.length
+                  ? currentQuestions.map((val, index) => (
+                      <>
+                        <h2 className="text-xl font-semibold text-custom-8">
+                          {val.title}
+                        </h2>
+                        {(val.optionTypeId === 3 || val.optionTypeId === 4) && (
+                          <Select
+                            options={val.optionsJson?.options as IOptions[]}
+                            selectedOptions={val?.answer || []}
+                            maxSelect={
+                              val.optionTypeId === 3
+                                ? 1
+                                : val.optionsJson?.options?.length || 1
+                            }
+                            onChange={(inx, maxSelect, linkedTo) =>
+                              onSelectOption(inx, maxSelect, linkedTo, index)
+                            }
+                          />
+                        )}
+                        {val.optionTypeId === 6 && (
+                          <Textarea
+                            id="txt-template-description"
+                            placeholder="Write here..."
+                            value={val.answer[0]}
+                            onChange={event =>
+                              setStateValue([event.target.value], index)
+                            }
+                            className="h-[calc(200px)] border-custom-7 p-3 text-base"
+                            required
+                          />
+                        )}
+                      </>
+                    ))
+                  : null}
+                {showFooter && !showThanksScreen ? (
                   <Button
                     id="btn-continue"
                     className="h-[calc(56px)] w-40 items-center bg-custom-10 focus:ring-0 enabled:hover:bg-custom-10 max-sm:hidden"
@@ -169,12 +250,13 @@ export default function Survey() {
                   >
                     <p className="text-base font-semibold">CONTINUE</p>
                   </Button>
-                )}
+                ) : null}
               </div>
-            )}
+            ) : null}
           </motion.div>
         </AnimatePresence>
-        {showThanksScreen && (
+
+        {showThanksScreen ? (
           <AnimatePresence>
             <motion.div
               className="md:absolute md:left-[calc(42%)] md:top-[calc(25%)]"
@@ -201,8 +283,8 @@ export default function Survey() {
               </div>
             </motion.div>
           </AnimatePresence>
-        )}
-        {showFooter && !showThanksScreen && (
+        ) : null}
+        {showFooter && !showThanksScreen ? (
           <div className="fixed bottom-0 left-0 right-0 z-10  bg-white px-8 py-4 shadow-[0px_-4px_24px_0px_rgba(0,0,0,0.25)] md:hidden">
             <Button
               id="btn-continue"
@@ -213,7 +295,7 @@ export default function Survey() {
               <p className="text-base font-semibold">CONTINUE</p>
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
