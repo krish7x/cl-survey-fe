@@ -31,7 +31,7 @@ export default function Survey() {
 
   const disabled = useMemo(() => {
     return currentQuestions.some(q => {
-      if (q.optionTypeId === 4) return !q.answer.length;
+      if (q.optionTypeId === 3 || q.optionTypeId === 4) return !q.answer.length;
       if (q.optionTypeId === 6) return !(q.answer[0] as string)?.length;
       return false;
     });
@@ -41,22 +41,22 @@ export default function Survey() {
   const setStateValue = useCallback(
     (answer: Array<string | number>, questionIndex?: number) => {
       if (questionIndex !== undefined) {
-        const curQuestion = currentQuestions[questionIndex];
-        const clone = [...questions];
-        const curIndex = questions.findIndex(
-          val => val.questionId === curQuestion.questionId,
+        const currentQuestion = currentQuestions[questionIndex];
+        const currentIndex = questions.findIndex(
+          val => val.questionId === currentQuestion.questionId,
         );
-        clone[curIndex] = {
-          ...curQuestion,
-          answer,
-        };
-        setQuestions(clone);
+        const questionClone = [...questions];
         const currentQuestionsClone = [...currentQuestions];
         currentQuestionsClone[questionIndex] = {
-          ...curQuestion,
+          ...currentQuestion,
+          answer,
+        };
+        questionClone[currentIndex] = {
+          ...currentQuestion,
           answer,
         };
         setCurrentQuestions(currentQuestionsClone);
+        setQuestions(questionClone);
       }
     },
     [currentQuestions, questions],
@@ -71,8 +71,11 @@ export default function Survey() {
     ) => {
       if (questionIndex !== undefined && currentQuestions?.length) {
         const currentQuestion = currentQuestions[questionIndex];
+        //if answer not already present
         if (!currentQuestion.answer.includes(inx)) {
+          //single select
           if (currentQuestion.optionTypeId === 3) {
+            //only one shoould be present
             if (!currentQuestion.answer.length) {
               //add
               const value = [...currentQuestion.answer, inx];
@@ -99,7 +102,9 @@ export default function Survey() {
                 setLinkedHash(hash);
               }
             }
-          } else {
+          }
+          //multi select
+          else {
             //add
             const value = [...currentQuestion.answer, inx];
             const hash = {
@@ -118,7 +123,7 @@ export default function Survey() {
           setLinkedHash(hash);
         }
 
-        //single select
+        //proceed to next screen for single select
         if (maxSelect === 1 && currentQuestions?.length === 1) {
           const curIndex = questions.findIndex(
             val => val.questionId === currentQuestion.questionId,
@@ -131,12 +136,10 @@ export default function Survey() {
                 );
                 if (curQuestion) {
                   setCurrentQuestions([curQuestion]);
-                } else {
-                  setCurrentQuestions([questions[questions.length - 1]]);
+                  return;
                 }
-              } else {
-                setCurrentQuestions([questions[questions.length - 1]]);
               }
+              setCurrentQuestions([questions[questions.length - 1]]);
             }, 300);
           } else {
             setShowThanksScreen(true);
@@ -150,12 +153,12 @@ export default function Survey() {
   const onContinue = useCallback(() => {
     const tempQuestion: ITemplateQuestion[] = [];
     currentQuestions.forEach((question, index) => {
-      const curIndex = questions.findIndex(
+      const currentIndex = questions.findIndex(
         val => val.questionId === question.questionId,
       );
-      if (curIndex !== questions.length - 1) {
-        const curQuestion: ITemplateQuestion = questions[curIndex];
-        curQuestion.answer.forEach((val: string | number) => {
+      if (currentIndex !== questions.length - 1) {
+        const currentQuestion: ITemplateQuestion = questions[currentIndex];
+        currentQuestion.answer.forEach((val: string | number) => {
           const linkedTo = linkedHash ? linkedHash[`${index}_${val}`] : false;
           const nextQuestion = questions.find(
             val => val.questionId === linkedTo,
@@ -170,18 +173,18 @@ export default function Survey() {
       setTimeout(() => {
         if (!tempQuestion.length) {
           setCurrentQuestions([questions[questions.length - 1]]);
-        } else {
-          setCurrentQuestions(tempQuestion);
+          return;
         }
+        setCurrentQuestions(tempQuestion);
+        setLinkedHash({});
       }, 300);
-      setLinkedHash({});
     });
   }, [currentQuestions, linkedHash, questions]);
 
   return (
     <div className="min-h-screen w-full bg-[radial-gradient(117.39%_169.54%_at_-3.2%_-1.87%,_rgba(255,_246,_200,_0.70)_0%,_rgba(255,_215,_245,_0.70)_21.81%,_rgba(243,_241,_255,_0.80)_50%,_#F8EBFB_100%)]">
       <div
-        className={`flex size-full flex-col items-center md:items-start ${!showThanksScreen && 'gap-[calc(80px)]'} p-8`}
+        className={`flex size-full  flex-col items-center md:items-start ${!showThanksScreen && 'gap-[calc(80px)]'} p-8`}
       >
         <Image
           src={caratlanelogo}
@@ -192,16 +195,16 @@ export default function Survey() {
         />
         <AnimatePresence>
           <motion.div
-            className={`${showFooter && 'pb-24'} md:mt-[calc(10%)] md:w-2/5 md:pl-24`}
+            className={`${showFooter && 'pb-24'} w-full md:mt-[calc(10%)] md:w-2/5 md:pl-24`}
             key={currentQuestions[0].questionId}
             layout
-            animate={{
-              opacity: 1,
-            }}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
             transition={{
+              type: 'spring',
               opacity: { ease: 'linear' },
-              layout: { duration: 0.5 },
-              ease: 'linear',
+              layout: { duration: 0.8 },
             }}
           >
             {!showThanksScreen ? (
@@ -260,10 +263,10 @@ export default function Survey() {
           <AnimatePresence>
             <motion.div
               className="md:absolute md:left-[calc(42%)] md:top-[calc(25%)]"
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 1 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.5 }}
+              exit={{ opacity: 0, scale: 1 }}
+              transition={{ type: 'spring', duration: 0.5 }}
             >
               <div className="flex flex-col items-center gap-8">
                 <div className="flex flex-col gap-2">
