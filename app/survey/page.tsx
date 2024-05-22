@@ -263,15 +263,10 @@ export default function Survey() {
           <AnimatePresence mode="wait">
             <motion.div
               className="md:absolute md:left-[calc(42%)] md:top-[calc(25%)]"
-              layout
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -10, opacity: 0 }}
-              transition={{
-                type: 'spring',
-                opacity: { ease: 'linear' },
-                layout: { duration: 0.8 },
-              }}
+              initial={{ opacity: 0, scale: 1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1 }}
+              transition={{ type: 'spring', duration: 0.5 }}
             >
               <div className="flex flex-col items-center gap-8">
                 <div className="flex flex-col gap-2">
@@ -292,17 +287,32 @@ export default function Survey() {
             </motion.div>
           </AnimatePresence>
         ) : null}
+
         {showFooter && !showThanksScreen ? (
-          <div className="fixed bottom-0 left-0 right-0 z-10  bg-white px-8 py-4 shadow-[0px_-4px_24px_0px_rgba(0,0,0,0.25)] md:hidden">
-            <Button
-              id="btn-continue"
-              className="h-[calc(56px)] w-full items-center bg-custom-10 focus:ring-0 enabled:hover:bg-custom-10"
-              disabled={disabled}
-              onClick={onContinue}
+          <AnimatePresence mode="wait">
+            <motion.div
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                type: 'spring',
+                opacity: { ease: 'easeIn' },
+                layout: { duration: 2 },
+              }}
             >
-              <p className="text-base font-semibold">CONTINUE</p>
-            </Button>
-          </div>
+              <div className="fixed bottom-0 left-0 right-0 z-10  bg-white px-8 py-4 shadow-[0px_-4px_24px_0px_rgba(0,0,0,0.25)] md:hidden">
+                <Button
+                  id="btn-continue"
+                  className="h-[calc(56px)] w-full items-center bg-custom-10 focus:ring-0 enabled:hover:bg-custom-10"
+                  disabled={disabled}
+                  onClick={onContinue}
+                >
+                  <p className="text-base font-semibold">CONTINUE</p>
+                </Button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         ) : null}
       </div>
     </div>
