@@ -193,7 +193,7 @@ export default function Survey() {
           height={48}
           className="md:absolute md:left-[calc(50%-64px)]"
         />
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           <motion.div
             className={`${showFooter && 'pb-24'} w-full md:mt-[calc(10%)] md:w-2/5 md:pl-24`}
             key={currentQuestions[0].questionId}
@@ -260,13 +260,18 @@ export default function Survey() {
         </AnimatePresence>
 
         {showThanksScreen ? (
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             <motion.div
               className="md:absolute md:left-[calc(42%)] md:top-[calc(25%)]"
-              initial={{ opacity: 0, scale: 1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1 }}
-              transition={{ type: 'spring', duration: 0.5 }}
+              layout
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -10, opacity: 0 }}
+              transition={{
+                type: 'spring',
+                opacity: { ease: 'linear' },
+                layout: { duration: 0.8 },
+              }}
             >
               <div className="flex flex-col items-center gap-8">
                 <div className="flex flex-col gap-2">
